@@ -20,6 +20,7 @@ import ai.mnemosyne_systems.model.event.Event;
 import ai.mnemosyne_systems.service.CrossReferenceService;
 import ai.mnemosyne_systems.service.EventService;
 import ai.mnemosyne_systems.util.AuthHelper;
+import ai.mnemosyne_systems.service.UserAvailabilityService;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.CookieParam;
@@ -51,6 +52,9 @@ public class UserTicketApiResource {
 
     @Inject
     EventService eventService;
+
+    @Inject
+    UserAvailabilityService userAvailabilityService;
 
     @GET
     @Transactional
@@ -185,6 +189,7 @@ public class UserTicketApiResource {
                 .preloadReferencedTickets(messages.stream().map(m -> m.body).toList());
         List<Event> rawEvents = eventService.getAllChangesToEntity(ticket.id);
         List<SupportTicketApiResource.EventEntry> eventEntries = rawEvents.stream().map(this::toEventEntry).toList();
+        List<String> availabilityWarnings = userAvailabilityService.getWarningsForTicket(ticket);
         return new RoleTicketDetailResponse(ticket.id, ticket.name, ticket.displayTitle(),
                 normalizeDisplayStatus(ticket.status), data.assignedTickets == null ? 0 : data.assignedTickets.size(),
                 data.openTickets == null ? 0 : data.openTickets.size(),
@@ -209,7 +214,7 @@ public class UserTicketApiResource {
                 "/user/tickets/" + ticket.id + "/messages", "/tickets/export/" + ticket.id,
                 List.of("Open", "Assigned", "In Progress", "Resolved", "Closed"), false, false, false, true, tamView,
                 externalUsers.stream().map(this::toUserReference).toList(),
-                userUsers.stream().map(this::toUserReference).toList(), eventEntries);
+                userUsers.stream().map(this::toUserReference).toList(), eventEntries, availabilityWarnings);
     }
 
     @GET
@@ -392,6 +397,7 @@ public class UserTicketApiResource {
             String messageActionPath, String exportPath, List<String> statusOptions, boolean editableStatus,
             boolean editableCategory, boolean editableExternalIssue, boolean editableAffectsVersion,
             boolean editableResolvedVersion, List<SupportTicketApiResource.UserReference> externalUsers,
-            List<SupportTicketApiResource.UserReference> userUsers, List<SupportTicketApiResource.EventEntry> events) {
+            List<SupportTicketApiResource.UserReference> userUsers, List<SupportTicketApiResource.EventEntry> events,
+            List<String> availabilityWarnings) {
     }
 }

@@ -20,6 +20,7 @@ import ai.mnemosyne_systems.service.CrossReferenceService;
 import ai.mnemosyne_systems.util.AuthHelper;
 import ai.mnemosyne_systems.model.event.Event;
 import ai.mnemosyne_systems.service.EventService;
+import ai.mnemosyne_systems.service.UserAvailabilityService;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.CookieParam;
@@ -49,6 +50,9 @@ public class SupportTicketApiResource {
     CrossReferenceService crossReferenceService;
     @Inject
     EventService eventService;
+
+    @Inject
+    UserAvailabilityService userAvailabilityService;
 
     @GET
     @Transactional
@@ -170,6 +174,7 @@ public class SupportTicketApiResource {
         List<MessageEntry> messageEntries = messages.stream().map(m -> toMessageEntry(m, ticketCache)).toList();
         List<Event> rawEvents = eventService.getAllChangesToEntity(ticket.id);
         List<EventEntry> eventEntries = rawEvents.stream().map(this::toEventEntry).toList();
+        List<String> availabilityWarnings = userAvailabilityService.getWarningsForTicket(ticket);
         return new SupportTicketDetailResponse(ticket.id, ticket.name, ticket.displayTitle(), displayStatus,
                 counts.assignedCount(), counts.openCount(), ticket.company == null ? null : ticket.company.id,
                 ticket.company == null ? null : ticket.company.name,
@@ -194,7 +199,7 @@ public class SupportTicketApiResource {
                 SupportTicketViewSupport.isEntitlementExpired(ticket), "/support/tickets/" + ticket.id,
                 "/support/tickets/" + ticket.id + "/messages", "/tickets/export/" + ticket.id,
                 List.of("Open", "Assigned", "In Progress", "Waiting for External Feedback", "Resolved", "Closed"),
-                externalUsers.stream().map(this::toUserReference).toList(), eventEntries);
+                externalUsers.stream().map(this::toUserReference).toList(), eventEntries, availabilityWarnings);
     }
 
     @GET
@@ -459,6 +464,6 @@ public class SupportTicketApiResource {
             List<VersionOption> versions, List<CategoryOption> categories, List<UserReference> supportUsers,
             List<UserReference> tamUsers, List<MessageEntry> messages, boolean ticketEntitlementExpired,
             String actionPath, String messageActionPath, String exportPath, List<String> statusOptions,
-            List<UserReference> externalUsers, List<EventEntry> events) {
+            List<UserReference> externalUsers, List<EventEntry> events, List<String> availabilityWarnings) {
     }
 }
