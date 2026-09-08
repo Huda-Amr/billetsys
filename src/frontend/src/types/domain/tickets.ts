@@ -108,6 +108,7 @@ export interface SupportTicketDetailRecord extends TicketReference {
   versions?: VersionInfo[];
   messages?: MessageReference[];
   events?: EventEntry[];
+  availabilityWarnings?: string[];
 }
 
 export interface CrossReferenceEntry {

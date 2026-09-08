@@ -17,7 +17,7 @@ Ahmed Abbas <ah.abbas333@gmail.com>
 Ahmad Bustany <ahmadbustany06@gmail.com>
 Omar Goher <omargoher59@gmail.com>
 Rawan Essam <rawanessamwork@gmail.com>
-
+Huda Amr <hudaamr2006@gmail.com>
 ```
 
 ## Committers

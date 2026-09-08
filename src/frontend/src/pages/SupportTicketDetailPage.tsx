@@ -67,6 +67,8 @@ import {
 } from "../components/ui/select";
 import { Ratings } from "../components/ui/ratings";
 import { Card, CardContent } from "../components/ui/card";
+import { Alert, AlertDescription, AlertTitle } from "../components/ui/alert";
+import { CalendarOffIcon } from "lucide-react";
 import AsciinemaPlayer from "../components/common/AsciinemaPlayer";
 
 interface SupportTicketDetailPageProps extends SessionPageProps {
@@ -744,6 +746,19 @@ export default function SupportTicketDetailPage({
                 showSummaryField ? ticket.title || formState.title : undefined
               }
             />
+            {(ticket.availabilityWarnings ?? []).length > 0 && (
+              <Alert variant="destructive">
+                <CalendarOffIcon />
+                <AlertTitle>Out of office</AlertTitle>
+                <AlertDescription>
+                  <ul className="list-disc pl-4">
+                    {(ticket.availabilityWarnings ?? []).map((warning) => (
+                      <li key={warning}>{warning}</li>
+                    ))}
+                  </ul>
+                </AlertDescription>
+              </Alert>
+            )}
             <form onSubmit={saveTicket} className="space-y-8">
               <div className="grid gap-5 md:grid-cols-2">
                 <Field>

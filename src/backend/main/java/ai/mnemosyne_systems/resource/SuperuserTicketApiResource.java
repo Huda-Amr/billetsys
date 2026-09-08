@@ -21,6 +21,8 @@ import ai.mnemosyne_systems.service.CrossReferenceService;
 import ai.mnemosyne_systems.service.DirectoryService;
 import ai.mnemosyne_systems.service.EventService;
 import ai.mnemosyne_systems.service.TicketBootstrapService;
+import ai.mnemosyne_systems.service.UserAvailabilityService;
+import ai.mnemosyne_systems.util.AuthHelper;
 import ai.mnemosyne_systems.util.AuthHelper;
 import ai.mnemosyne_systems.util.CurrentUser;
 import jakarta.annotation.security.RolesAllowed;
@@ -63,6 +65,9 @@ public class SuperuserTicketApiResource {
 
     @Inject
     DirectoryService directoryService;
+
+    @Inject
+    UserAvailabilityService userAvailabilityService;
 
     @GET
     @Transactional
@@ -205,6 +210,7 @@ public class SuperuserTicketApiResource {
         java.util.Map<Long, Ticket> ticketCache = crossReferenceService
                 .preloadReferencedTickets(messages.stream().map(m -> m.body).toList());
         List<Event> rawEvents = eventService.getAllChangesToEntity(ticket.id);
+        List<String> availabilityWarnings = userAvailabilityService.getWarningsForTicket(ticket);
         List<SupportTicketApiResource.EventEntry> eventEntries = rawEvents.stream().map(this::toEventEntry).toList();
 
         return new UserTicketApiResource.RoleTicketDetailResponse(ticket.id, ticket.name, ticket.displayTitle(),
@@ -231,7 +237,7 @@ public class SuperuserTicketApiResource {
                 "/superuser/tickets/" + ticket.id + "/messages", "/tickets/export/" + ticket.id,
                 List.of("Open", "Assigned", "In Progress", "Resolved", "Closed"), false, false, false, true, true,
                 externalUsers.stream().map(this::toUserReference).toList(),
-                userUsers.stream().map(this::toUserReference).toList(), eventEntries);
+                userUsers.stream().map(this::toUserReference).toList(), eventEntries, availabilityWarnings);
     }
 
     @GET
